@@ -1,35 +1,40 @@
-import { BrowserWindow, app } from 'electron'
+import { BrowserWindow } from 'electron'
+import express from 'express'
 import * as fse from 'fs-extra'
 import * as path from 'path'
-import express from 'express'
+import {
+  DEFAULT_ARCHIVES_PAGE_SIZE,
+  DEFAULT_ARCHIVES_PATH,
+  DEFAULT_FEED_COUNT,
+  DEFAULT_POST_PAGE_SIZE,
+  DEFAULT_POST_PATH,
+  DEFAULT_TAG_PATH,
+} from '../helpers/constants'
+import Deploy from './deploy'
 import EventClasses from './events/index'
-import Posts from './posts'
-import Tags from './tags'
+import { IApplicationDb, IApplicationSetting } from './interfaces/application'
 import Menus from './menus'
-import Theme from './theme'
+import Posts from './posts'
 import Renderer from './renderer'
 import Setting from './setting'
-import Deploy from './deploy'
+import Tags from './tags'
+import Theme from './theme'
 
-import { IApplicationDb, IApplicationSetting } from './interfaces/application'
-import {
-  DEFAULT_POST_PAGE_SIZE, DEFAULT_ARCHIVES_PAGE_SIZE, DEFAULT_FEED_COUNT, DEFAULT_ARCHIVES_PATH, DEFAULT_POST_PATH, DEFAULT_TAG_PATH,
-} from '../helpers/constants'
 // eslint-disable-next-line
-declare const __static: string
+declare const __static: string;
 
 export default class App {
-  mainWindow: BrowserWindow
+  mainWindow: BrowserWindow;
 
-  app: any
+  app: any;
 
-  baseDir: string
+  baseDir: string;
 
-  appDir: string
+  appDir: string;
 
-  previewServer: any
+  previewServer: any;
 
-  db: IApplicationDb
+  db: IApplicationDb;
 
   constructor(setting: IApplicationSetting) {
     this.mainWindow = setting.mainWindow
@@ -155,7 +160,8 @@ export default class App {
     try {
       const appConfigFolder = path.join(this.app.getPath('home'), '.gridea')
       const appConfigPath = path.join(appConfigFolder, 'config.json')
-      const jsonString = `{"sourceFolder": "${sourceFolderPath || this.appDir}"}`
+      const jsonString = `{"sourceFolder": "${sourceFolderPath
+        || this.appDir}"}`
 
       fse.writeFileSync(appConfigPath, jsonString)
       const appConfig = fse.readJsonSync(appConfigPath)
@@ -176,7 +182,10 @@ export default class App {
    */
   private async checkDir() {
     // Check if there is a .hve-notes folder, if it exists, load it, otherwise use the default configuration.
-    const appConfigFolderOld = path.join(this.app.getPath('home'), '.hve-notes') // < 0.7.7
+    const appConfigFolderOld = path.join(
+      this.app.getPath('home'),
+      '.hve-notes',
+    ) // < 0.7.7
 
     const appConfigFolder = path.join(this.app.getPath('home'), '.gridea')
     const appConfigPath = path.join(appConfigFolder, 'config.json')
@@ -186,7 +195,10 @@ export default class App {
     try {
       // if exist `.hve-notes` config folder, change folder name to `.gridea`
       try {
-        if (!fse.pathExistsSync(appConfigFolder) && fse.pathExistsSync(appConfigFolderOld)) {
+        if (
+          !fse.pathExistsSync(appConfigFolder)
+          && fse.pathExistsSync(appConfigFolderOld)
+        ) {
           fse.renameSync(appConfigFolderOld, appConfigFolder)
         }
       } catch (e) {
@@ -205,7 +217,15 @@ export default class App {
       // Site folder exists
       if (fse.pathExistsSync(this.appDir)) {
         // Check if the `images`, `config`, 'output', `post-images`, 'posts', 'themes', 'static' folder exists, if it does not exist, copy it from default-files
-        ['images', 'config', 'output', 'post-images', 'posts', 'themes', 'static'].forEach((folder: string) => {
+        [
+          'images',
+          'config',
+          'output',
+          'post-images',
+          'posts',
+          'themes',
+          'static',
+        ].forEach((folder: string) => {
           const folderPath = path.join(this.appDir, folder)
           if (!fse.pathExistsSync(folderPath)) {
             fse.copySync(

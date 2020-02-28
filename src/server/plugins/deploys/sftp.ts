@@ -1,8 +1,6 @@
 import * as fse from 'fs-extra'
-// import * as fs from 'fs'
 import path from 'path'
 import SftpClient from 'ssh2-sftp-client'
-import NodeSsh from 'node-ssh'
 import normalizePath from 'normalize-path'
 import Model from '../../model'
 
@@ -13,7 +11,7 @@ type sftpConnectConfig = {
   username: string;
   password?: string;
   privateKey?: string | Buffer;
-}
+};
 
 export default class SftpDeploy extends Model {
   // connect: SftpClient
@@ -53,15 +51,22 @@ export default class SftpDeploy extends Model {
     }
 
     const testFilename = 'gridea.txt'
-    const localTestFilePath = normalizePath(path.join(this.appDir, testFilename))
-    const remoteTestFilePath = normalizePath(path.join(setting.remotePath, testFilename))
+    const localTestFilePath = normalizePath(
+      path.join(this.appDir, testFilename),
+    )
+    const remoteTestFilePath = normalizePath(
+      path.join(setting.remotePath, testFilename),
+    )
 
     try {
       await client.connect(connectConfig)
       await client.list('/')
 
       try {
-        fse.writeFileSync(localTestFilePath, 'This is gridea test file. you can delete it.')
+        fse.writeFileSync(
+          localTestFilePath,
+          'This is gridea test file. you can delete it.',
+        )
 
         await client.put(localTestFilePath, remoteTestFilePath)
         await client.delete(remoteTestFilePath)
@@ -91,7 +96,7 @@ export default class SftpDeploy extends Model {
       message: '',
     }
 
-    const client = new NodeSsh()
+    const client = new SftpClient()
 
     const { setting } = this.db
 
@@ -115,28 +120,25 @@ export default class SftpDeploy extends Model {
     try {
       await client.connect(connectConfig)
       try {
-        await client.exec(`rm -rf ${remotePath}`)
-        await client.mkdir(remotePath)
-        const res = await client.putDirectory(localPath, remotePath, {
-          recursive: true,
-          concurrency: 10,
-          validate: function (itemPath: string) {
-            const baseName = path.basename(itemPath)
-            return baseName.substr(0, 1) !== '.' // do not allow dot files
-                   && baseName !== 'node_modules' // do not allow node_modules
-          },
-        })
+        const pathExists = await client.exists(remotePath)
+        if (pathExists) {
+          await client.rmdir(remotePath, true)
+        } else {
+          await client.mkdir(remotePath)
+        }
+        // @ts-ignore
+        const res = await client.uploadDir(localPath, remotePath)
       } catch (e) {
         console.error('SFTP Publish Error: ', e.message)
         result.success = false
         result.message = e.message
       }
     } catch (e) {
-      console.error('SFTP Publish Error: ', e.message)
+      console.error('SFTP Connect Error: ', e.message)
       result.success = false
       result.message = e.message
     } finally {
-      await client.dispose()
+      await client.end()
     }
 
     return result

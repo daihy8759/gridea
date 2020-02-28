@@ -8,9 +8,19 @@
       </a-tooltip>
     </a-row>
     <div class="content-container">
-      <div v-for="(tag, index) in site.tags" :key="tag.name" class="tag-wrapper">
-        <div class="tag" @click="tag.used ? null : updateTag(tag, index)"><i class="zwicon-price-tag text-base mr-1"></i> {{ tag.name }}</div>
-        <i class="zwicon-trash delete-icon" v-if="!tag.used" @click="handleDelete(tag.name)"></i>
+      <div
+        v-for="(tag, index) in site.tags"
+        :key="tag.name"
+        class="tag-wrapper"
+      >
+        <div class="tag" @click="tag.used ? null : updateTag(tag, index)">
+          <i class="zwicon-price-tag text-base mr-1"></i> {{ tag.name }}
+        </div>
+        <i
+          class="zwicon-trash delete-icon"
+          v-if="!tag.used"
+          @click="handleDelete(tag.name)"
+        ></i>
       </div>
     </div>
     <a-drawer
@@ -18,7 +28,11 @@
       width="400"
       :visible="visible"
       @close="close"
-      :wrapStyle="{height: 'calc(100% - 108px)',overflow: 'auto',paddingBottom: '108px'}"
+      :wrapStyle="{
+        height: 'calc(100% - 108px)',
+        overflow: 'auto',
+        paddingBottom: '108px'
+      }"
     >
       <a-form :form="form" layout="vertical">
         <a-form-item :label="$t('tagName')">
@@ -36,16 +50,15 @@
           width: '100%',
           padding: '10px 16px',
           background: '#fff',
-          textAlign: 'right',
+          textAlign: 'right'
         }"
       >
-        <a-button
-          :style="{marginRight: '8px'}"
-          @click="close"
-        >
-          {{ $t('cancel') }}
+        <a-button :style="{ marginRight: '8px' }" @click="close">
+          {{ $t("cancel") }}
         </a-button>
-        <a-button type="primary" :disabled="!canSubmit" @click="saveTag">{{ $t('save') }}</a-button>
+        <a-button type="primary" :disabled="!canSubmit" @click="saveTag">{{
+          $t("save")
+        }}</a-button>
       </div>
     </a-drawer>
   </div>
@@ -64,26 +77,29 @@ import ga from '../../helpers/analytics'
 
 @Component
 export default class Tags extends Vue {
-  @State('site') site!: Site
+  @State('site') site!: Site;
 
-  visible = false
+  visible = false;
 
-  isUpdate = false
+  isUpdate = false;
 
   form = {
     name: null,
     slug: '',
     index: -1,
-  }
+  };
 
-  slugChanged = false
+  slugChanged = false;
 
   get canSubmit() {
     return this.form.name
   }
 
   handleNameChange(val: string) {
-    if (!this.slugChanged && this.site.themeConfig.tagUrlFormat === UrlFormats.Slug) {
+    if (
+      !this.slugChanged
+      && this.site.themeConfig.tagUrlFormat === UrlFormats.Slug
+    ) {
       this.form.slug = slug(this.form.name)
     }
   }
@@ -142,8 +158,9 @@ export default class Tags extends Vue {
       tags.splice(this.form.index, 1)
     }
 
-
-    const foundTagIndex = tags.findIndex((tag: ITag) => tag.name === this.form.name || tag.slug === this.form.slug)
+    const foundTagIndex = tags.findIndex(
+      (tag: ITag) => tag.name === this.form.name || tag.slug === this.form.slug,
+    )
     if (foundTagIndex !== -1) {
       return false
     }
@@ -171,6 +188,7 @@ export default class Tags extends Vue {
   }
 
   async handleDelete(tagValue: string) {
+    // @ts-ignore
     this.$confirm({
       title: `${this.$t('warning')}`,
       content: `${this.$t('deleteWarning')}`,
@@ -179,11 +197,14 @@ export default class Tags extends Vue {
       cancelText: 'No',
       onOk: () => {
         ipcRenderer.send('tag-delete', tagValue)
-        ipcRenderer.once('tag-deleted', (event: IpcRendererEvent, result: any) => {
-          this.$bus.$emit('site-reload')
-          this.$message.success('标签已删除')
-          this.visible = false
-        })
+        ipcRenderer.once(
+          'tag-deleted',
+          (event: IpcRendererEvent, result: any) => {
+            this.$bus.$emit('site-reload')
+            this.$message.success('标签已删除')
+            this.visible = false
+          },
+        )
       },
     })
   }

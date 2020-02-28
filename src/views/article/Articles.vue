@@ -2,8 +2,15 @@
   <div class="articles-page">
     <div class="flex justify-between tool-container">
       <div class="flex items-center">
-        <div v-if="selectedPost.length > 0" @click="deleteSelectedPosts" class="flex items-center py-1 px-2 bg-gray-100 transition cursor-default hover:bg-gray-200 rounded-sm">
-          <i class="ri-delete-bin-3-line mr-2"></i><span class="text-sm">{{ $t('deleteSelected') }} {{ selectedPost.length }}</span>
+        <div
+          v-if="selectedPost.length > 0"
+          @click="deleteSelectedPosts"
+          class="flex items-center py-1 px-2 bg-gray-100 transition cursor-default hover:bg-gray-200 rounded-sm"
+        >
+          <i class="ri-delete-bin-3-line mr-2"></i
+          ><span class="text-sm"
+            >{{ $t("deleteSelected") }} {{ selectedPost.length }}</span
+          >
         </div>
       </div>
       <div class="flex">
@@ -17,7 +24,11 @@
           v-if="searchInputVisible"
         />
         <a-tooltip placement="bottom" :title="$t('searchArticle')">
-          <div class="op-btn" @click="searchInputVisible = true" v-if="!keyword && !searchInputVisible">
+          <div
+            class="op-btn"
+            @click="searchInputVisible = true"
+            v-if="!keyword && !searchInputVisible"
+          >
             <i class="zwicon-search"></i>
           </div>
         </a-tooltip>
@@ -32,24 +43,41 @@
       <div class="pb-12">
         <div
           class="post-container flex mb-2 rounded-sm relative cursor-pointer transition-fast hover:bg-gray-100 overflow-hidden"
-          v-for="post in currentPostList" :key="post.fileName"
+          v-for="post in currentPostList"
+          :key="post.fileName"
           @click="editPost(post)"
         >
           <div class="p-4 flex-1 flex">
             <div class="flex flex-shrink-0 items-center pr-4">
-              <a-checkbox @click.stop="() => {}" :checked="selectedPost.includes(post)" @change="onSelectChange(post)"></a-checkbox>
+              <a-checkbox
+                @click.stop="() => {}"
+                :checked="selectedPost.includes(post)"
+                @change="onSelectChange(post)"
+              ></a-checkbox>
             </div>
             <div class="flex-1">
-              <a class="post-title block text-base text-gray-700 mb-2">{{ post.data.title }}</a>
+              <a class="post-title block text-base text-gray-700 mb-2">{{
+                post.data.title
+              }}</a>
               <div class="text-xs flex items-center text-gray-300">
                 <div class="text-xs flex items-center mr-2">
-                  <div class="rounded-full w-1 h-1 mr-1" :class="{ 'bg-green-500': post.data.published, 'bg-gray-500': !post.data.published }"></div>
-                  {{ post.data.published ? $t('published') : $t('draft') }}
+                  <div
+                    class="rounded-full w-1 h-1 mr-1"
+                    :class="{
+                      'bg-green-500': post.data.published,
+                      'bg-gray-500': !post.data.published
+                    }"
+                  ></div>
+                  {{ post.data.published ? $t("published") : $t("draft") }}
                 </div>
                 <div class="flex items-center">
-                  <i class="ri-calendar-line mr-1"></i> {{ $moment(post.data.date).format('YYYY-MM-DD') }}
+                  <i class="ri-calendar-line mr-1"></i>
+                  {{ $moment(post.data.date).format("YYYY-MM-DD") }}
                 </div>
-                <div class="flex-1 flex flex-wrap items-center ml-2" v-if="(post.data.tags || []).length > 0">
+                <div
+                  class="flex-1 flex flex-wrap items-center ml-2"
+                  v-if="(post.data.tags || []).length > 0"
+                >
                   <i class="ri-price-tag-3-line"></i>
                   <div v-for="(tag, index) in post.data.tags" :key="index">
                     <div class="text-xs ml-1 flex" v-if="index < 2">
@@ -64,13 +92,23 @@
             </div>
           </div>
 
-          <img v-if="post.data.feature" :src="post.data.feature" class="feature-img" />
+          <img
+            v-if="post.data.feature"
+            :src="post.data.feature"
+            class="feature-img"
+          />
 
           <div class="absolute right-0 top-0 -mt-px -mr-px flex">
-            <div v-if="post.data.hideInList" class="text-xs flex items-center px-2 rounded-b rounded-br-none bg-gray-800 text-white">
+            <div
+              v-if="post.data.hideInList"
+              class="text-xs flex items-center px-2 rounded-b rounded-br-none bg-gray-800 text-white"
+            >
               HIDE
             </div>
-            <div v-if="post.data.isTop" class="ml-2 text-xs flex items-center px-2 rounded-b rounded-br-none bg-yellow-400 text-gray-900">
+            <div
+              v-if="post.data.isTop"
+              class="ml-2 text-xs flex items-center px-2 rounded-b rounded-br-none bg-yellow-400 text-gray-900"
+            >
               TOP
             </div>
           </div>
@@ -114,21 +152,21 @@ import ga from '../../helpers/analytics'
   },
 })
 export default class Articles extends Vue {
-  @State('site') site!: any
+  @State('site') site!: any;
 
-  articleUpdateVisible = false
+  articleUpdateVisible = false;
 
-  currentArticleFileName = ''
+  currentArticleFileName = '';
 
-  selectedPost: any = []
+  selectedPost: any = [];
 
-  keyword = ''
+  keyword = '';
 
-  searchInputVisible = false
+  searchInputVisible = false;
 
-  currentPage = 1
+  currentPage = 1;
 
-  pageSize = 20
+  pageSize = 20;
 
   handleSearchInputBlur() {
     if (!this.keyword) {
@@ -141,11 +179,16 @@ export default class Articles extends Vue {
   }
 
   get currentPostList() {
-    return this.postList.slice((this.currentPage - 1) * this.pageSize, this.currentPage * this.pageSize)
+    return this.postList.slice(
+      (this.currentPage - 1) * this.pageSize,
+      this.currentPage * this.pageSize,
+    )
   }
 
   onSelectChange(post: any) {
-    const foundIndex = this.selectedPost.findIndex((item: any) => item === post)
+    const foundIndex = this.selectedPost.findIndex(
+      (item: any) => item === post,
+    )
     if (foundIndex !== -1) {
       this.selectedPost.splice(foundIndex, 1)
     } else {
@@ -179,6 +222,7 @@ export default class Articles extends Vue {
   }
 
   async deletePost(post: IPost) {
+    // @ts-ignore
     this.$confirm({
       title: `${this.$t('warning')}`,
       content: `${this.$t('deleteWarning')}`,
@@ -187,17 +231,21 @@ export default class Articles extends Vue {
       cancelText: 'No',
       onOk: () => {
         ipcRenderer.send('app-post-delete', post)
-        ipcRenderer.once('app-post-deleted', (event: IpcRendererEvent, data: any) => {
-          if (data) {
-            this.$message.success(this.$t('articleDelete'))
-            this.$bus.$emit('site-reload')
-          }
-        })
+        ipcRenderer.once(
+          'app-post-deleted',
+          (event: IpcRendererEvent, data: any) => {
+            if (data) {
+              this.$message.success(this.$t('articleDelete'))
+              this.$bus.$emit('site-reload')
+            }
+          },
+        )
       },
     })
   }
 
   async deleteSelectedPosts() {
+    // @ts-ignore
     this.$confirm({
       title: `${this.$t('warning')}`,
       content: `${this.$t('deleteWarning')}`,
@@ -206,17 +254,23 @@ export default class Articles extends Vue {
       cancelText: 'No',
       onOk: () => {
         ipcRenderer.send('app-post-list-delete', this.selectedPost)
-        ipcRenderer.once('app-post-list-deleted', (event: IpcRendererEvent, data: any) => {
-          console.log(data)
-          if (data) {
-            this.$bus.$emit('snackbar-display', this.$t('articleDelete'))
-            this.$bus.$emit('site-reload')
+        ipcRenderer.once(
+          'app-post-list-deleted',
+          (event: IpcRendererEvent, data: any) => {
+            console.log(data)
+            if (data) {
+              this.$bus.$emit('snackbar-display', this.$t('articleDelete'))
+              this.$bus.$emit('site-reload')
 
-            ga.event('Post', 'Post - delete', { evLabel: this.site.setting.domain, evValue: this.selectedPost.length })
+              ga.event('Post', 'Post - delete', {
+                evLabel: this.site.setting.domain,
+                evValue: this.selectedPost.length,
+              })
 
-            this.selectedPost = []
-          }
-        })
+              this.selectedPost = []
+            }
+          },
+        )
       },
     })
   }
@@ -233,7 +287,7 @@ export default class Articles extends Vue {
 </script>
 
 <style lang="less" scoped>
-@import '~@/assets/styles/var.less';
+@import "~@/assets/styles/var.less";
 
 .articles-page {
   position: relative;

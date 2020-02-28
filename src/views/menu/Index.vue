@@ -23,9 +23,14 @@
               {{ menu.name }}
             </div>
             <div class="text-xs flex items-center">
-              <div class="text-xs flex items-center px-2 rounded border bg-gray-100 border-gray-200 text-gray-500 mr-4">
+              <div
+                class="text-xs flex items-center px-2 rounded border bg-gray-100 border-gray-200 text-gray-500 mr-4"
+              >
                 {{ menu.openType }}
-                <i class="ri-external-link-line ml-2" v-if="menu.openType === 'External'"></i>
+                <i
+                  class="ri-external-link-line ml-2"
+                  v-if="menu.openType === 'External'"
+                ></i>
               </div>
               <div class="text-gray-300">
                 {{ menu.link }}
@@ -33,7 +38,10 @@
             </div>
           </div>
           <div class="flex items-center px-4">
-            <i class="ri-delete-bin-4-line hover:text-red-700" @click.stop="deleteMenu(menu.name)"></i>
+            <i
+              class="ri-delete-bin-4-line hover:text-red-700"
+              @click.stop="deleteMenu(menu.name)"
+            ></i>
           </div>
         </div>
       </draggable>
@@ -43,21 +51,43 @@
       width="400"
       :visible="visible"
       @close="close"
-      :wrapStyle="{height: 'calc(100% - 108px)',overflow: 'auto',paddingBottom: '108px'}"
+      :wrapStyle="{
+        height: 'calc(100% - 108px)',
+        overflow: 'auto',
+        paddingBottom: '108px'
+      }"
     >
       <a-form :form="form" layout="vertical">
         <a-form-item :label="$t('name')">
           <a-input v-model="form.name" />
         </a-form-item>
         <a-form-item label=" ">
-          <a-radio-group defaultValue="a" buttonStyle="solid" v-model="form.openType">
-            <a-radio-button v-for="item in menuTypes" :key="item" :value="item">{{ item }}</a-radio-button>
+          <a-radio-group
+            defaultValue="a"
+            buttonStyle="solid"
+            v-model="form.openType"
+          >
+            <a-radio-button
+              v-for="item in menuTypes"
+              :key="item"
+              :value="item"
+              >{{ item }}</a-radio-button
+            >
           </a-radio-group>
         </a-form-item>
         <a-form-item label="Link">
-          <a-input v-model="form.link" class="link-input" placeholder="输入或从下面选择"></a-input>
+          <a-input
+            v-model="form.link"
+            class="link-input"
+            placeholder="输入或从下面选择"
+          ></a-input>
           <a-select v-model="form.link">
-            <a-select-option v-for="item in menuLinks" :key="item.value" :value="item.value">{{ item.text }}</a-select-option>
+            <a-select-option
+              v-for="item in menuLinks"
+              :key="item.value"
+              :value="item.value"
+              >{{ item.text }}</a-select-option
+            >
           </a-select>
         </a-form-item>
       </a-form>
@@ -69,16 +99,15 @@
           width: '100%',
           padding: '10px 16px',
           background: '#fff',
-          textAlign: 'right',
+          textAlign: 'right'
         }"
       >
-        <a-button
-          :style="{marginRight: '8px'}"
-          @click="close"
-        >
-          {{ $t('cancel') }}
+        <a-button :style="{ marginRight: '8px' }" @click="close">
+          {{ $t("cancel") }}
         </a-button>
-        <a-button type="primary" :disabled="!canSubmit" @click="saveMenu">{{ $t('save') }}</a-button>
+        <a-button type="primary" :disabled="!canSubmit" @click="saveMenu">{{
+          $t("save")
+        }}</a-button>
       </div>
     </a-drawer>
   </div>
@@ -96,10 +125,10 @@ import { IPost } from '../../interfaces/post'
 import ga from '../../helpers/analytics'
 
 interface IForm {
-  name: any
-  index: any
-  openType: string
-  link: string
+  name: any;
+  index: any;
+  openType: string;
+  link: string;
 }
 
 @Component({
@@ -108,42 +137,42 @@ interface IForm {
   },
 })
 export default class Menu extends Vue {
-  @State('site') site!: any
+  @State('site') site!: any;
 
   form: IForm = {
     name: '',
     index: '',
     openType: MenuTypes.Internal,
     link: '',
-  }
+  };
 
-  menuList: any = []
+  menuList: any = [];
 
-  draggleList: any = []
+  draggleList: any = [];
 
-  visible = false
+  visible = false;
 
-  menuTypes = MenuTypes
+  menuTypes = MenuTypes;
 
   get menuLinks() {
     const { setting, themeConfig } = this.site
     const posts = this.site.posts.map((item: IPost) => {
       return {
-        text: `📄 ${item.data.title}`,
+        text: `� ${item.data.title}`,
         value: urlJoin(setting.domain, themeConfig.postPath, item.fileName),
       }
     })
     return [
       {
-        text: '🏠 Homepage',
+        text: '� Homepage',
         value: setting.domain,
       },
       {
-        text: '📚 Archives',
+        text: '� Archives',
         value: urlJoin(setting.domain, themeConfig.archivesPath),
       },
       {
-        text: '🏷️ Tags',
+        text: '�️ Tags',
         value: urlJoin(setting.domain, 'tags'),
       },
       ...posts,
@@ -197,6 +226,7 @@ export default class Menu extends Vue {
   }
 
   async deleteMenu(menuValue: string) {
+    // @ts-ignore
     this.$confirm({
       title: `${this.$t('warning')}`,
       content: `${this.$t('deleteWarning')}`,
@@ -205,14 +235,19 @@ export default class Menu extends Vue {
       cancelText: 'No',
       onOk: () => {
         ipcRenderer.send('menu-delete', menuValue)
-        ipcRenderer.once('menu-deleted', (event: IpcRendererEvent, result: any) => {
-          const foundIndex = this.menuList.findIndex((item: IMenu) => item.name === menuValue)
-          this.menuList.splice(foundIndex, 1)
+        ipcRenderer.once(
+          'menu-deleted',
+          (event: IpcRendererEvent, result: any) => {
+            const foundIndex = this.menuList.findIndex(
+              (item: IMenu) => item.name === menuValue,
+            )
+            this.menuList.splice(foundIndex, 1)
 
-          this.$bus.$emit('site-reload')
-          this.$message.success(this.$t('menuDelete'))
-          this.visible = false
-        })
+            this.$bus.$emit('site-reload')
+            this.$message.success(this.$t('menuDelete'))
+            this.visible = false
+          },
+        )
       },
     })
   }

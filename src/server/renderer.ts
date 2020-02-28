@@ -12,10 +12,16 @@ import Model from './model'
 import ContentHelper from '../helpers/content-helper'
 import { formatThemeCustomConfigToRender } from '../helpers/utils'
 import {
-  IPostDb, IPostRenderData, ITagRenderData, ISiteTagsData,
+  IPostDb,
+  IPostRenderData,
+  ITagRenderData,
+  ISiteTagsData,
 } from './interfaces/post'
 import { ITag } from './interfaces/tag'
-import { DEFAULT_POST_PAGE_SIZE, DEFAULT_ARCHIVES_PAGE_SIZE } from '../helpers/constants'
+import {
+  DEFAULT_POST_PAGE_SIZE,
+  DEFAULT_ARCHIVES_PAGE_SIZE,
+} from '../helpers/constants'
 import markdown from './plugins/markdown'
 import { IMenu } from './interfaces/menu'
 
@@ -23,21 +29,21 @@ Bluebird.promisifyAll(fs)
 const helper = new ContentHelper()
 
 export default class Renderer extends Model {
-  outputDir: string = `${this.appDir}/output`
+  outputDir: string = `${this.appDir}/output`;
 
-  themePath: string = ''
+  themePath: string = '';
 
-  postsData: IPostRenderData[] = []
+  postsData: IPostRenderData[] = [];
 
-  tagsData: ISiteTagsData[] = []
+  tagsData: ISiteTagsData[] = [];
 
-  menuData: IMenu[] = []
+  menuData: IMenu[] = [];
 
-  siteData: any = {}
+  siteData: any = {};
 
-  previewPort: number
+  previewPort: number;
 
-  utils: any = {}
+  utils: any = {};
 
   constructor(appInstance: any) {
     super(appInstance)
@@ -83,7 +89,11 @@ export default class Renderer extends Model {
    * Load Config
    */
   async loadConfig() {
-    this.themePath = urlJoin(this.appDir, 'themes', this.db.themeConfig.themeName)
+    this.themePath = urlJoin(
+      this.appDir,
+      'themes',
+      this.db.themeConfig.themeName,
+    )
 
     fse.ensureDirSync(urlJoin(this.appDir, 'output'))
   }
@@ -94,15 +104,19 @@ export default class Renderer extends Model {
   public formatDataForRender(): any {
     const { themeConfig } = this.db
 
-    this.postsData = this.db.posts.filter((item: IPostDb) => item.data.published)
+    this.postsData = this.db.posts
+      .filter((item: IPostDb) => item.data.published)
       .map((item: IPostDb) => {
         const currentTags = item.data.tags || []
         let toc = ''
-        const content = markdown.render(helper.changeImageUrlLocalToDomain(item.content, themeConfig.domain), {
-          tocCallback(tocMarkdown: any, tocArray: any, tocHtml: any) {
-            toc = tocHtml
+        const content = markdown.render(
+          helper.changeImageUrlLocalToDomain(item.content, themeConfig.domain),
+          {
+            tocCallback(tocMarkdown: any, tocArray: any, tocHtml: any) {
+              toc = tocHtml
+            },
           },
-        })
+        )
 
         let words = 0
         wordCount(content, (count: number) => {
@@ -121,34 +135,64 @@ export default class Renderer extends Model {
         const result: IPostRenderData = {
           content,
           fileName: item.fileName,
-          abstract: markdown.render(helper.changeImageUrlLocalToDomain(item.abstract, themeConfig.domain)),
+          abstract: markdown.render(
+            helper.changeImageUrlLocalToDomain(
+              item.abstract,
+              themeConfig.domain,
+            ),
+          ),
           title: item.data.title,
           tags: this.db.tags
             .filter((tag: ITag) => currentTags.find(i => i === tag.name))
-            .map((tag: ITag) => ({ ...tag, link: urlJoin(themeConfig.domain, themeConfig.tagPath, `${tag.slug}`, '/') })),
+            .map((tag: ITag) => ({
+              ...tag,
+              link: urlJoin(
+                themeConfig.domain,
+                themeConfig.tagPath,
+                `${tag.slug}`,
+                '/',
+              ),
+            })),
           date: item.data.date,
-          dateFormat: (themeConfig.dateFormat && moment(item.data.date).format(themeConfig.dateFormat)) || item.data.date,
-          feature: item.data.feature && !item.data.feature.includes('http')
-            ? `${helper.changeFeatureImageUrlLocalToDomain(item.data.feature, themeConfig.domain)}`
-            : item.data.feature || '',
-          link: urlJoin(themeConfig.domain, themeConfig.postPath, item.fileName, '/'),
+          dateFormat:
+            (themeConfig.dateFormat
+              && moment(item.data.date).format(themeConfig.dateFormat))
+            || item.data.date,
+          feature:
+            item.data.feature && !item.data.feature.includes('http')
+              ? `${helper.changeFeatureImageUrlLocalToDomain(
+                item.data.feature,
+                themeConfig.domain,
+              )}`
+              : item.data.feature || '',
+          link: urlJoin(
+            themeConfig.domain,
+            themeConfig.postPath,
+            item.fileName,
+            '/',
+          ),
           hideInList: !!item.data.hideInList,
           isTop: !!item.data.isTop,
           stats,
-          description: `${content.replace(/<[^>]*>/g, '').substring(0, 120)}${content[121] ? '...' : ''}`,
+          description: `${content.replace(/<[^>]*>/g, '').substring(0, 120)}${
+            content[121] ? '...' : ''
+          }`,
         }
 
         result.toc = toc
         return result
       })
-      .sort((a: IPostRenderData, b: IPostRenderData) => moment(b.date).unix() - moment(a.date).unix())
-
+      .sort(
+        (a: IPostRenderData, b: IPostRenderData) => moment(b.date).unix() - moment(a.date).unix(),
+      )
 
     this.tagsData = []
     this.postsData.forEach((item: IPostRenderData) => {
       if (!item.hideInList) {
         item.tags.forEach((tag: ITagRenderData) => {
-          const foundTag = this.tagsData.find((t: ITagRenderData) => t.link === tag.link)
+          const foundTag = this.tagsData.find(
+            (t: ITagRenderData) => t.link === tag.link,
+          )
           if (!foundTag) {
             this.tagsData.push({
               ...tag,
@@ -162,7 +206,10 @@ export default class Renderer extends Model {
     })
 
     this.menuData = this.db.menus.map((menu: IMenu) => {
-      let link = menu.link.replace(this.db.setting.domain, this.db.themeConfig.domain)
+      let link = menu.link.replace(
+        this.db.setting.domain,
+        this.db.themeConfig.domain,
+      )
 
       const isSiteLink = menu.link.includes(this.db.setting.domain)
       if (isSiteLink) {
@@ -180,7 +227,10 @@ export default class Renderer extends Model {
       tags: this.tagsData,
       menus: this.menuData,
       themeConfig: this.db.themeConfig,
-      customConfig: formatThemeCustomConfigToRender(this.db.themeCustomConfig, this.db.currentThemeConfig),
+      customConfig: formatThemeCustomConfigToRender(
+        this.db.themeCustomConfig,
+        this.db.currentThemeConfig,
+      ),
       utils: this.utils,
       isHomepage: false,
     }
@@ -198,14 +248,24 @@ export default class Renderer extends Model {
       ? archivesPageSize || DEFAULT_ARCHIVES_PAGE_SIZE
       : postPageSize || DEFAULT_POST_PAGE_SIZE
 
-    let excludeHidePostsData = this.postsData.filter((item: IPostRenderData) => !item.hideInList)
+    let excludeHidePostsData = this.postsData.filter(
+      (item: IPostRenderData) => !item.hideInList,
+    )
 
-    const renderTemplatePath = urlJoin(this.themePath, 'templates', `${archivePath ? 'archives.ejs' : 'index.ejs'}`)
+    const renderTemplatePath = urlJoin(
+      this.themePath,
+      'templates',
+      `${archivePath ? 'archives.ejs' : 'index.ejs'}`,
+    )
 
     // If it is not archives, sort by `isTop` then to render
     if (!archivePath) {
-      const isTopPosts = excludeHidePostsData.filter((item: IPostRenderData) => item.isTop)
-      const notTopPosts = excludeHidePostsData.filter((item: IPostRenderData) => !item.isTop)
+      const isTopPosts = excludeHidePostsData.filter(
+        (item: IPostRenderData) => item.isTop,
+      )
+      const notTopPosts = excludeHidePostsData.filter(
+        (item: IPostRenderData) => !item.isTop,
+      )
       excludeHidePostsData = isTopPosts.concat(notTopPosts)
     }
 
@@ -250,7 +310,10 @@ export default class Renderer extends Model {
     }
 
     for (let i = 0; i * pageSize < excludeHidePostsData.length; i += 1) {
-      renderData.posts = excludeHidePostsData.slice(i * pageSize, (i + 1) * pageSize)
+      renderData.posts = excludeHidePostsData.slice(
+        i * pageSize,
+        (i + 1) * pageSize,
+      )
       renderData.site.isHomepage = !archivePath && !i
 
       if (i === 0 && excludeHidePostsData.length > pageSize) {
@@ -258,9 +321,17 @@ export default class Renderer extends Model {
 
         renderData.pagination.next = urlJoin(domain, archivePath, 'page', '2')
       } else if (i > 0 && excludeHidePostsData.length > pageSize) {
-        fse.ensureDirSync(urlJoin(this.outputDir, archivePath, 'page', `${i + 1}`))
+        fse.ensureDirSync(
+          urlJoin(this.outputDir, archivePath, 'page', `${i + 1}`),
+        )
 
-        renderPath = urlJoin(this.outputDir, archivePath, 'page', `${i + 1}`, 'index.html')
+        renderPath = urlJoin(
+          this.outputDir,
+          archivePath,
+          'page',
+          `${i + 1}`,
+          'index.html',
+        )
 
         renderData.pagination.prev = i === 1
           ? urlJoin(domain, archivePath, '/')
@@ -275,7 +346,7 @@ export default class Renderer extends Model {
 
       renderFile(renderTemplatePath, renderData)
 
-      console.log('👏  PostList Page:', renderPath)
+      console.log('�  PostList Page:', renderPath)
       fs.writeFileSync(renderPath, html)
     }
   }
@@ -289,19 +360,23 @@ export default class Renderer extends Model {
 
       if (!post.hideInList) {
         if (i < this.postsData.length - 1) {
-          const nexPost = this.postsData.slice(i + 1, this.postsData.length).find((item: IPostRenderData) => !item.hideInList)
+          const nexPost = this.postsData
+            .slice(i + 1, this.postsData.length)
+            .find((item: IPostRenderData) => !item.hideInList)
           if (nexPost) {
             post.nextPost = nexPost
           }
         }
         if (i > 0) {
-          const prevPost = this.postsData.slice(0, i).reverse().find((item: IPostRenderData) => !item.hideInList)
+          const prevPost = this.postsData
+            .slice(0, i)
+            .reverse()
+            .find((item: IPostRenderData) => !item.hideInList)
           if (prevPost) {
             post.prevPost = prevPost
           }
         }
       }
-
 
       const renderData = {
         menus: this.menuData,
@@ -311,20 +386,29 @@ export default class Renderer extends Model {
         site: this.siteData,
       }
       let html = ''
-      ejs.renderFile(urlJoin(this.themePath, 'templates', 'post.ejs'), renderData, {}, async (err: any, str) => {
-        if (err) {
-          console.error('❌ Render post detail error')
-          this.mainWindow.webContents.send('log-error', {
-            type: 'Render post detail error',
-            message: err.message,
-          })
-        }
-        if (str) {
-          html = str
-        }
-      })
+      ejs.renderFile(
+        urlJoin(this.themePath, 'templates', 'post.ejs'),
+        renderData,
+        {},
+        async (err: any, str) => {
+          if (err) {
+            console.error('❌ Render post detail error')
+            this.mainWindow.webContents.send('log-error', {
+              type: 'Render post detail error',
+              message: err.message,
+            })
+          }
+          if (str) {
+            html = str
+          }
+        },
+      )
 
-      const renderFolerPath = urlJoin(this.outputDir, `${this.db.themeConfig.postPath}`, post.fileName)
+      const renderFolerPath = urlJoin(
+        this.outputDir,
+        `${this.db.themeConfig.postPath}`,
+        post.fileName,
+      )
       fse.ensureDirSync(renderFolerPath)
       fs.writeFileSync(urlJoin(renderFolerPath, 'index.html'), html)
     }
@@ -345,19 +429,24 @@ export default class Renderer extends Model {
     let html = ''
 
     fse.ensureDirSync(tagsFolder)
-    await ejs.renderFile(urlJoin(this.themePath, 'templates', 'tags.ejs'), renderData, {}, async (err: any, str) => {
-      if (err) {
-        console.log('❌ Render tags page error', err)
-        this.mainWindow.webContents.send('log-error', {
-          type: 'Render tags page error',
-          message: err.message,
-        })
-      }
-      if (str) {
-        html = str
-      }
-    })
-    console.log('👏  Tags Page:', renderPath)
+    await ejs.renderFile(
+      urlJoin(this.themePath, 'templates', 'tags.ejs'),
+      renderData,
+      {},
+      async (err: any, str) => {
+        if (err) {
+          console.log('❌ Render tags page error', err)
+          this.mainWindow.webContents.send('log-error', {
+            type: 'Render tags page error',
+            message: err.message,
+          })
+        }
+        if (str) {
+          html = str
+        }
+      },
+    )
+    console.log('�  Tags Page:', renderPath)
     fs.writeFileSync(renderPath, html)
   }
 
@@ -373,12 +462,18 @@ export default class Renderer extends Model {
 
     for (const usedTag of usedTags) {
       const posts = this.postsData.filter((post: IPostRenderData) => {
-        return post.tags.find((tag: ITagRenderData) => tag.slug === usedTag.slug)
+        return post.tags.find(
+          (tag: ITagRenderData) => tag.slug === usedTag.slug,
+        )
       })
 
       const currentTag = usedTag
 
-      const tagFolderPath = urlJoin(this.outputDir, tagPath, `${currentTag.slug}`)
+      const tagFolderPath = urlJoin(
+        this.outputDir,
+        tagPath,
+        `${currentTag.slug}`,
+      )
       const tagDomainPath = urlJoin(domain, tagPath, `${currentTag.slug}`)
       fse.ensureDirSync(tagFolderPath)
 
@@ -407,9 +502,7 @@ export default class Renderer extends Model {
 
           renderPath = urlJoin(tagFolderPath, 'page', `${i + 1}`, 'index.html')
 
-          renderData.pagination.prev = i === 1
-            ? tagDomainPath
-            : urlJoin(tagDomainPath, 'page', `${i}/`)
+          renderData.pagination.prev = i === 1 ? tagDomainPath : urlJoin(tagDomainPath, 'page', `${i}/`)
 
           renderData.pagination.next = (i + 1) * pageSize < posts.length
             ? urlJoin(tagDomainPath, 'page', `${i + 2}/`)
@@ -417,19 +510,24 @@ export default class Renderer extends Model {
         }
 
         let html = ''
-        ejs.renderFile(urlJoin(this.themePath, 'templates', 'tag.ejs'), renderData, {}, async (err: any, str) => {
-          if (err) {
-            console.log('❌ Render tag detail error', err)
-            this.mainWindow.webContents.send('log-error', {
-              type: 'Render tag detail error',
-              message: err.message,
-            })
-          }
-          if (str) {
-            html = str
-          }
-        })
-        console.log('👏  Tag Page:', renderPath)
+        ejs.renderFile(
+          urlJoin(this.themePath, 'templates', 'tag.ejs'),
+          renderData,
+          {},
+          async (err: any, str) => {
+            if (err) {
+              console.log('❌ Render tag detail error', err)
+              this.mainWindow.webContents.send('log-error', {
+                type: 'Render tag detail error',
+                message: err.message,
+              })
+            }
+            if (str) {
+              html = str
+            }
+          },
+        )
+        console.log('�  Tag Page:', renderPath)
         fs.writeFileSync(renderPath, html)
       }
     }
@@ -439,7 +537,9 @@ export default class Renderer extends Model {
    * Render custom page, eg. friends.ejs, about.ejs, home.ejs, projects.ejs...
    */
   async renderCustomPage() {
-    const files = fse.readdirSync(urlJoin(this.themePath, 'templates'), { withFileTypes: true })
+    const files = fse.readdirSync(urlJoin(this.themePath, 'templates'), {
+      withFileTypes: true,
+    })
     const customTemplates = files
       .filter(item => !item.isDirectory())
       .map(item => item.name)
@@ -451,7 +551,7 @@ export default class Renderer extends Model {
           'tag.ejs',
           'tags.ejs',
           'archives.ejs',
-          // 👇 Gridea protected word, because these filename is gridea folder's name
+          // � Gridea protected word, because these filename is gridea folder's name
           'images.ejs',
           'media.ejs',
           'post-images.ejs',
@@ -460,7 +560,7 @@ export default class Renderer extends Model {
           'tags.ejs',
         ].includes(name)
       })
-    
+
     const renderData = {
       menus: this.menuData,
       themeConfig: this.db.themeConfig,
@@ -469,7 +569,10 @@ export default class Renderer extends Model {
     }
 
     customTemplates.forEach(async (name: string) => {
-      let renderFolder = urlJoin(this.outputDir, name.substring(0, name.length - 4))
+      let renderFolder = urlJoin(
+        this.outputDir,
+        name.substring(0, name.length - 4),
+      )
       let renderPath = urlJoin(renderFolder, 'index.html')
       let html = ''
 
@@ -479,18 +582,22 @@ export default class Renderer extends Model {
       }
 
       fse.ensureDirSync(renderFolder)
-      await ejs.renderFile(urlJoin(this.themePath, 'templates', name), renderData, async (err: any, str) => {
-        if (err) {
-          console.error('❌ Render custom page error', err)
-          this.mainWindow.webContents.send('log-error', {
-            type: 'Render custom page error',
-            message: err.message,
-          })
-        }
-        if (str) {
-          html = str
-        }
-      })
+      await ejs.renderFile(
+        urlJoin(this.themePath, 'templates', name),
+        renderData,
+        async (err: any, str) => {
+          if (err) {
+            console.error('❌ Render custom page error', err)
+            this.mainWindow.webContents.send('log-error', {
+              type: 'Render custom page error',
+              message: err.message,
+            })
+          }
+          if (str) {
+            html = str
+          }
+        },
+      )
       fse.writeFileSync(renderPath, html)
       console.log('✅ Render custom page success', renderPath)
     })
@@ -500,35 +607,56 @@ export default class Renderer extends Model {
    * Build CSS and write file
    */
   async buildCss() {
-    const lessFilePath = urlJoin(this.themePath, 'assets', 'styles', 'main.less')
+    const lessFilePath = urlJoin(
+      this.themePath,
+      'assets',
+      'styles',
+      'main.less',
+    )
     const cssFolderPath = urlJoin(this.outputDir, 'styles')
 
     fse.ensureDirSync(cssFolderPath)
 
     const lessString = fs.readFileSync(lessFilePath, 'utf8')
-    less.render(lessString, { filename: lessFilePath }, async (err: any, cssString: Less.RenderOutput) => {
-      if (err) {
-        console.log(err)
-      }
-      let { css } = cssString
+    less.render(
+      lessString,
+      { filename: lessFilePath },
+      async (err: any, cssString?: Less.RenderOutput) => {
+        if (err) {
+          console.log(err)
+        }
+        if (!cssString) {
+          return
+        }
+        let { css } = cssString
 
-      // if have override
-      const customConfig = this.db.themeCustomConfig
-      const currentThemePath = urlJoin(this.appDir, 'themes', this.db.themeConfig.themeName)
+        // if have override
+        const customConfig = this.db.themeCustomConfig
+        const currentThemePath = urlJoin(
+          this.appDir,
+          'themes',
+          this.db.themeConfig.themeName,
+        )
 
-      const styleOverridePath = urlJoin(currentThemePath, 'style-override.js')
-      const existOverrideFile = await fse.pathExists(styleOverridePath)
-      if (existOverrideFile) {
-        // clean cache
-        delete __non_webpack_require__.cache[__non_webpack_require__.resolve(styleOverridePath)]
+        const styleOverridePath = urlJoin(
+          currentThemePath,
+          'style-override.js',
+        )
+        const existOverrideFile = await fse.pathExists(styleOverridePath)
+        if (existOverrideFile) {
+          // clean cache
+          delete __non_webpack_require__.cache[
+            __non_webpack_require__.resolve(styleOverridePath)
+          ]
 
-        const generateOverride = __non_webpack_require__(styleOverridePath)
-        const customCss = generateOverride(customConfig)
-        css += customCss
-      }
+          const generateOverride = __non_webpack_require__(styleOverridePath)
+          const customCss = generateOverride(customConfig)
+          css += customCss
+        }
 
-      fs.writeFileSync(urlJoin(cssFolderPath, 'main.css'), css)
-    })
+        fs.writeFileSync(urlJoin(cssFolderPath, 'main.css'), css)
+      },
+    )
   }
 
   /**
@@ -559,7 +687,9 @@ export default class Renderer extends Model {
       link: themeConfig.domain,
       image: urlJoin(themeConfig.domain, 'images', 'avatar.png'),
       favicon: urlJoin(themeConfig.domain, 'favicon.ico'),
-      copyright: `All rights reserved ${(new Date()).getFullYear()}, ${themeConfig.siteName}`,
+      copyright: `All rights reserved ${new Date().getFullYear()}, ${
+        themeConfig.siteName
+      }`,
       feedLinks: {
         atom: urlJoin(themeConfig.domain, feedFilename),
       },
@@ -569,7 +699,9 @@ export default class Renderer extends Model {
       .filter((item: IPostRenderData) => !item.hideInList)
       .slice(0, themeConfig.feedCount || DEFAULT_FEED_COUNT)
 
-    const feedFullText = (typeof themeConfig.feedFullText) === 'undefined' ? true : themeConfig.feedFullText
+    const feedFullText = typeof themeConfig.feedFullText === 'undefined'
+      ? true
+      : themeConfig.feedFullText
 
     postsData.forEach((post: IPostRenderData) => {
       feed.addItem({
@@ -617,7 +749,10 @@ export default class Renderer extends Model {
     // Copy favicon.ico
     const faviconInputPath = urlJoin(this.appDir, 'favicon.ico')
     if (fse.existsSync(faviconInputPath)) {
-      fse.copyFileSync(faviconInputPath, urlJoin(this.outputDir, 'favicon.ico'))
+      fse.copyFileSync(
+        faviconInputPath,
+        urlJoin(this.outputDir, 'favicon.ico'),
+      )
     }
   }
 
@@ -628,7 +763,7 @@ export default class Renderer extends Model {
       .map(item => item.name)
       .filter(junk.not)
       .filter((name: string) => name !== '.git')
-    
+
     try {
       needClearPath.forEach(async (name: string) => {
         fse.removeSync(urlJoin(outputDir, name))

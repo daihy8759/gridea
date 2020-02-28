@@ -1,9 +1,7 @@
 import {
   app, protocol, BrowserWindow, Menu, shell,
 } from 'electron'
-import {
-  createProtocol,
-} from 'vue-cli-plugin-electron-builder/lib'
+import { createProtocol } from 'vue-cli-plugin-electron-builder/lib'
 import { autoUpdater } from 'electron-updater'
 import { init } from '@sentry/electron/dist/main'
 import App from './server/app'
@@ -21,7 +19,9 @@ let menu: Menu
 let httpServer: any
 
 // Standard scheme must be registered before the app is ready
-protocol.registerSchemesAsPrivileged([{ scheme: 'app', privileges: { secure: true, standard: true } }])
+protocol.registerSchemesAsPrivileged([
+  { scheme: 'app', privileges: { secure: true, standard: true } },
+])
 function createWindow() {
   // Create the browser window.
   const winOption: any = {
@@ -34,20 +34,27 @@ function createWindow() {
       nodeIntegration: true,
     },
     // frame: false, // 去除默认窗口栏
-    titleBarStyle: 'hiddenInset' as ('hidden' | 'default' | 'hiddenInset' | 'customButtonsOnHover' | undefined),
+    titleBarStyle: 'hiddenInset' as
+      | 'hidden'
+      | 'default'
+      | 'hiddenInset'
+      | 'customButtonsOnHover'
+      | undefined,
   }
 
   if (process.platform !== 'darwin') {
     winOption.icon = `${__dirname}/app-icons/gridea.png`
   }
-  
+
   win = new BrowserWindow(winOption)
   win.setTitle('Gridea')
 
   if (process.env.WEBPACK_DEV_SERVER_URL) {
     // Load the url of the dev server if in development mode
     win.loadURL(process.env.WEBPACK_DEV_SERVER_URL as string)
-    if (!process.env.IS_TEST) { win.webContents.openDevTools() }
+    if (!process.env.IS_TEST) {
+      win.webContents.openDevTools()
+    }
   } else {
     createProtocol('app')
     // Load the index.html when not in development
@@ -96,7 +103,9 @@ function createWindow() {
       submenu: [
         {
           label: 'Learn More',
-          click() { shell.openExternal('https://github.com/getgridea/gridea') },
+          click() {
+            shell.openExternal('https://github.com/getgridea/gridea')
+          },
         },
       ],
     },
